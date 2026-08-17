@@ -1,6 +1,6 @@
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 
@@ -9,6 +9,8 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 
 function DepressionResult({ }) {
     const { score } = useParams();
+    const [searchParams] = useSearchParams();
+    const severity = searchParams.get('severity') || 'Unknown';
     const chartRef = useRef(null);
 
     useEffect(() => {
@@ -38,7 +40,7 @@ function DepressionResult({ }) {
                 backgroundColors = ['#ea0f0e', 'rgba(243, 244, 244, 1)'];
                 break;
             default:
-                backgroundColors = ['#000000', 'rgba(243, 244, 244, 1)']; // Default color if none of the cases match
+                backgroundColors = ['#000000', 'rgba(243, 244, 244, 1)'];
         }
         return backgroundColors;
     }
@@ -75,6 +77,7 @@ function DepressionResult({ }) {
         <>
             <div className='flex flex-col items-center justify-start pt-10 w-full h-[80vh] bg-slate-200 max-[433px]:h-auto max-[900px]:h-auto'>
                 <h1 className='text-2xl font-bold max-[433px]:text-lg'>Your Assessment Result</h1>
+                <p className='text-lg font-semibold mt-2 text-[#da9273]'>ML Predicted Severity: {severity}</p>
                 <div className='w-80 h-80 bg-white my-4 rounded-lg p-4 shadow-md max-[433px]:w-50'>
                     <Doughnut
                         ref={chartRef}
@@ -117,7 +120,7 @@ function DepressionResult({ }) {
                 <div className='flex gap-4 my-4 text-lg max-[433px]:flex-col max-[433px]:justify-center max-[433px]:items-center max-[630px]:flex-col'>
                     <div className='flex flex-col justify-center items-center shadow-md p-4 rounded-lg bg-slate-50 max-[433px]:w-48 max-[630px]:text-sm'>
                         <p className='max-[433px]:text-sm'>If you want professional help</p>
-                        <Link to='/therapy/Individual' className='bg-[#efb399] hover:bg-[#e3a286] p-2 rounded-2xl mt-2 max-[433px]:text-sm max-[630px]:text-sm'>Get therapy now</Link>
+                        <Link to='/therapy/All?type=Depression' className='bg-[#efb399] hover:bg-[#e3a286] p-2 rounded-2xl mt-2 max-[433px]:text-sm max-[630px]:text-sm'>Get therapy now</Link>
                     </div>
                     <div className='flex flex-col justify-center items-center shadow-md p-4 rounded-lg bg-slate-50 max-[433px]:w-48'>
                         <p className='max-[433px]:text-sm max-[630px]:text-sm'>Or find videos or articles to calm yourself</p>

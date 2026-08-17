@@ -88,21 +88,43 @@ const Form = () => {
         q9: 0
     })
     const nevigate = useNavigate()
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        let result = 0
-        Object.keys(formData).forEach(function (key, index) {
-            formData[key] = Number(formData[key]);
-            result += formData[key]
-        });
-        console.log(formData);
-        console.log(result);
-        // console.log('Before');
-        // setScores((scores) =>  {depression: result})
-        // console.log('After');
-        update_depression_score(result)
-        nevigate(`DepressionResult/${result}`)
+    const handleSubmit = async (e) => {
+    e.preventDefault()
+    let result = 0
+    Object.keys(formData).forEach(function (key, index) {
+        formData[key] = Number(formData[key]);
+        result += formData[key]
+    });
+    console.log(formData);
+    console.log(result);
+
+    let severity = 'Unknown'
+    try {
+        const mlResponse = await fetch('http://localhost:5002/predict', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                phq1: formData.q1,
+                phq2: formData.q2,
+                phq3: formData.q3,
+                phq4: formData.q4,
+                phq5: formData.q5,
+                phq6: formData.q6,
+                phq7: formData.q7,
+                phq8: formData.q8,
+                phq9: formData.q9
+            })
+        })
+        const mlData = await mlResponse.json()
+        severity = mlData.severity
+        console.log("ML prediction:", mlData)
+    } catch (err) {
+        console.error("ML prediction failed:", err)
     }
+
+    update_depression_score(result)
+    nevigate(`DepressionResult/${result}?severity=${encodeURIComponent(severity)}`)
+}
     return (
         <form className="flex flex-col justify-center items-center m-4 rounded-md p-4 gap-4" onSubmit={handleSubmit}>
             <QueForm formData={formData} setFormData={setFormData} />

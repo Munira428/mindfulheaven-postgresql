@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const JWT = require("jsonwebtoken");
+
 require("dotenv").config();
 
 const maxAge = 3 * 60 * 60 * 24;
@@ -48,9 +49,29 @@ module.exports.logout_post = async (req, res) => {
 
 module.exports.get_details = async (req, res) => {
   try {
+    const token = req.cookies.jwt;
+    if (!token) return res.status(401).json({ message: "Not authenticated" });
+
+    let decoded;
+    try {
+      decoded = JWT.verify(token, process.env.SECRET_KEY);
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid or expired session" });
+    }
+
+    if (String(decoded.id) !== String(req.params.id)) {
+      return res.status(403).json({ message: "Not authorized to view this data" });
+    }
+
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
+
+    const scores = await User.getScores(req.params.id);
+    const depressionScores = scores.filter(s => s.type === 'depression').map(s => s.score);
+    const anxietyScores = scores.filter(s => s.type === 'anxiety').map(s => s.score);
+    const stressScores = scores.filter(s => s.type === 'stress').map(s => s.score);
+
+    res.json({ ...user, depressionScores, anxietyScores, stressScores });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

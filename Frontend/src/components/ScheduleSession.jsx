@@ -68,11 +68,12 @@ function ScheduleSession() {
 
             console.log(response);
             const data = await response.json();
+            
             if (response.status === 201) {
                 setMessage('Session scheduled successfully');
                 swal('Session scheduled successfully! Check your e-mail for detalis.')
                 sendConfirmationMail();
-                // console.log('Session scheduled successfully:', data);
+                fetch_therapist_sessions_details();
             }
             else if (response.status === 400) {
                 setMessage(data.error)

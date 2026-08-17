@@ -127,6 +127,18 @@ function Login() {
                     </div>
                     <div className='self-center'>
                         <button
+                            className='px-6 py-1 text-sm rounded-lg bg-orange-200 hover:bg-orange-300'
+                            onClick={() => {
+                            setEmail('demo@mindfulheaven.com')
+                            setPassword('demo1234')
+                            }}
+                            type="button"
+                        >
+                        Try Demo Account
+                        </button>
+                    </div>
+                    <div className='self-center'>
+                        <button
                             className='px-8 py-1 text-white rounded-lg bg-blue-400 hover:bg-blue-500 max-[690px]:text-sm'
                             onClick={onButtonClick}
                         >

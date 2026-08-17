@@ -84,17 +84,40 @@ const Form = () => {
         q7: 0
     })
     const nevigate = useNavigate()
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        let result = 0
-        Object.keys(formData).forEach(function (key, index) {
-            formData[key] = Number(formData[key]);
-            result += formData[key]
-        });
-        console.log(formData);
-        update_anxiety_score(result)
-        nevigate(`AnxietyResult/${result}`)
+    const handleSubmit = async (e) => {
+    e.preventDefault()
+    let result = 0
+    Object.keys(formData).forEach(function (key, index) {
+        formData[key] = Number(formData[key]);
+        result += formData[key]
+    });
+    console.log(formData);
+
+    let severity = 'Unknown'
+    try {
+        const mlResponse = await fetch('http://localhost:5002/predict-anxiety', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                q1: formData.q1,
+                q2: formData.q2,
+                q3: formData.q3,
+                q4: formData.q4,
+                q5: formData.q5,
+                q6: formData.q6,
+                q7: formData.q7
+            })
+        })
+        const mlData = await mlResponse.json()
+        severity = mlData.severity
+        console.log("ML prediction:", mlData)
+    } catch (err) {
+        console.error("ML prediction failed:", err)
     }
+
+    update_anxiety_score(result)
+    nevigate(`AnxietyResult/${result}?severity=${encodeURIComponent(severity)}`)
+}
     return (
         <form className="flex flex-col justify-center items-center m-4 rounded-md p-4 gap-4" onSubmit={handleSubmit}>
             <QueForm formData={formData} setFormData={setFormData} />

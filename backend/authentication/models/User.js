@@ -36,4 +36,12 @@ const addScore = async (userId, type, score) => {
   );
 };
 
-module.exports = { createUser, login, findById, addScore };
+const getScores = async (userId) => {
+  const result = await pool.query(
+    "SELECT type, score FROM scores WHERE user_id = $1 ORDER BY created_at ASC",
+    [userId]
+  );
+  return result.rows;
+};
+
+module.exports = { createUser, login, findById, addScore, getScores };

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import TherapistImg from '../assets/images/therapist.jpg'
 import SuggestTherapistShimmer from './SuggestTherapistShimmer'
 
 function SuggestTherapist() {
     const { category } = useParams()
+    const [searchParams] = useSearchParams()
+    const type = searchParams.get('type')
     const [therapists, setTherapists] = useState([])
     const nevigate = useNavigate()
 
     useEffect(() => {
         getTherapists()
-        console.log(therapists)
     }, [])
 
     async function getTherapists() {
@@ -21,7 +22,7 @@ function SuggestTherapist() {
             },
             body: JSON.stringify({
                 category: `${category}`,
-                type: `Depression`
+                type: type
             })
         })
         const responseData = await response.json()

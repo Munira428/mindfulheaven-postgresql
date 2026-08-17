@@ -2,27 +2,15 @@ import BgPic from '../assets/images/testpage.png'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const pss10Ques = [
-    'In the last month, how often have you been upset because of something that happened unexpectedly?',
-    'In the last month, how often have you felt that you were unable to control the important things in your life?',
-    'In the last month, how often have you felt nervous and stressed?',
-    'In the last month, how often have you felt confident about your ability to handle your personal problems?',
-    'In the last month, how often have you felt that things were going your way?',
-    'In the last month, how often have you found that you could not cope with all the things that you had to do?',
-    'In the last month, how often have you been able to control irritations in your life?',
-    'In the last month, how often have you felt that you were on top of things?',
-    'In the last month, how often have you been angered because of things that happened that were outside of your control?',
-    'In the last month, how often have you felt difficulties were piling up so high thatyou could not overcome them?'
+const stressQues = [
+    'I found myself getting upset by quite trivial things',
+    'I tended to over-react to situations',
+    'I found it difficult to relax',
+    'I found myself getting upset rather easily',
+    'I felt that I was using a lot of nervous energy',
+    'I found myself getting impatient when I was delayed in any way',
+    'I found it hard to wind down'
 ]
-
-const values = (index) => {
-    if(index === 3 || index === 4 || index === 6 || index === 7){
-        return [4, 3, 2, 1, 0]
-    }
-    else{
-        return [0, 1, 2, 3, 4]
-    }
-} 
 
 const QueForm = ({ formData, setFormData }) => {
     const changeHandler = (event) => {
@@ -31,31 +19,26 @@ const QueForm = ({ formData, setFormData }) => {
     }
     return (
         <>
-            {pss10Ques.map((que, index) => {
-                const value = values(index)
+            {stressQues.map((que, index) => {
                 return (
                     <div key={index * index} className="border-2 flex flex-col gap-4 p-4 rounded-md w-[35rem] bg-[#eae0e0] max-[433px]:w-[18rem]">
                         <h1 className="text-lg font-bold max-[433px]:text-sm">Q{index + 1} {que}</h1 >
                         <div className='max-[433px]:text-sm'>
                             <div className="ml-4 flex items-center gap-2">
-                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index}`} className="cursor-pointer" required value={value[0]} onChange={changeHandler} />
-                                <label htmlFor={`q${index + 1}-${index}`} >Never</label>
+                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index}`} className="cursor-pointer" required value={0} onChange={changeHandler} />
+                                <label htmlFor={`q${index + 1}-${index}`} >Did not apply to me at all</label>
                             </div>
                             <div className="ml-4 flex items-center gap-2">
-                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 1}`} className="cursor-pointer" required value={value[1]} onChange={changeHandler} />
-                                <label htmlFor={`q${index + 1}-${index + 1}`} >Almost never</label>
+                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 1}`} className="cursor-pointer" required value={1} onChange={changeHandler} />
+                                <label htmlFor={`q${index + 1}-${index + 1}`} >Applied to me to some degree</label>
                             </div>
                             <div className="ml-4 flex items-center gap-2">
-                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 2}`} className="cursor-pointer" required value={value[2]} onChange={changeHandler} />
-                                <label htmlFor={`q${index + 1}-${index + 2}`} >Sometimes</label>
+                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 2}`} className="cursor-pointer" required value={2} onChange={changeHandler} />
+                                <label htmlFor={`q${index + 1}-${index + 2}`} >Applied to me a considerable degree</label>
                             </div>
                             <div className="ml-4 flex items-center gap-2">
-                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 3}`} className="cursor-pointer" required value={value[3]} onChange={changeHandler} />
-                                <label htmlFor={`q${index + 1}-${index + 3}`} >Fairly often</label>
-                            </div>
-                            <div className="ml-4 flex items-center gap-2">
-                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 4}`} className="cursor-pointer" required value={value[4]} onChange={changeHandler} />
-                                <label htmlFor={`q${index + 1}-${index + 4}`} >Very often</label>
+                                <input type="radio" name={`q${index + 1}`} id={`q${index + 1}-${index + 3}`} className="cursor-pointer" required value={3} onChange={changeHandler} />
+                                <label htmlFor={`q${index + 1}-${index + 3}`} >Applied to me very much</label>
                             </div>
                         </div>
                     </div>
@@ -64,7 +47,6 @@ const QueForm = ({ formData, setFormData }) => {
         </>
     )
 }
-
 
 async function update_stress_score(result){
     try{
@@ -90,7 +72,6 @@ async function update_stress_score(result){
 }
 
 const Form = () => {
-    // const [inputValues, setInputValues] = useState([])
     const [formData, setFormData] = useState({
         q1: 0,
         q2: 0,
@@ -98,13 +79,10 @@ const Form = () => {
         q4: 0,
         q5: 0,
         q6: 0,
-        q7: 0,
-        q8: 0,
-        q9: 0,
-        q10: 0
+        q7: 0
     })
     const nevigate = useNavigate()
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         let result = 0
         Object.keys(formData).forEach(function (key, index) {
@@ -112,8 +90,31 @@ const Form = () => {
             result += formData[key]
         });
         console.log(formData);
+
+        let severity = 'Unknown'
+        try {
+            const mlResponse = await fetch('http://localhost:5002/predict-stress', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    q1: formData.q1,
+                    q2: formData.q2,
+                    q3: formData.q3,
+                    q4: formData.q4,
+                    q5: formData.q5,
+                    q6: formData.q6,
+                    q7: formData.q7
+                })
+            })
+            const mlData = await mlResponse.json()
+            severity = mlData.severity
+            console.log("ML prediction:", mlData)
+        } catch (err) {
+            console.error("ML prediction failed:", err)
+        }
+
         update_stress_score(result)
-        nevigate(`StressResult/${result}`)
+        nevigate(`StressResult/${result}?severity=${encodeURIComponent(severity)}`)
     }
     return (
         <form className="flex flex-col justify-center items-center m-4 rounded-md p-4 gap-4" onSubmit={handleSubmit}>

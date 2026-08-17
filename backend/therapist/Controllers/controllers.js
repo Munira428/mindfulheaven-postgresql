@@ -4,10 +4,19 @@ const nodemailer = require("nodemailer");
 module.exports.suggest_therapist = async (req, res) => {
   try {
     const { category, type } = req.body;
-    const result = await pool.query(
-      "SELECT * FROM therapists WHERE category = $1 AND type = $2",
-      [category, type]
-    );
+    let query = "SELECT * FROM therapists WHERE 1=1";
+    const params = [];
+
+    if (category && category !== 'All') {
+      params.push(category);
+      query += ` AND category = $${params.length}`;
+    }
+    if (type) {
+      params.push(type);
+      query += ` AND type = $${params.length}`;
+    }
+
+    const result = await pool.query(query, params);
     const response = result.rows.map((t) => ({
       therapistId: t.id,
       therapistName: t.name,
@@ -86,7 +95,11 @@ module.exports.therapistSessions = async (req, res) => {
        WHERE sb.therapist_id = $1`,
       [therapistId]
     );
-    res.status(200).json({ bookingDetails: result.rows });
+    const sessionDetails = result.rows.map(r => ({
+      startTime: r.start_time,
+      endTime: r.end_time
+    }));
+    res.status(200).json({ sessionDetails, bookingDetails: result.rows });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred while fetching therapist sessions." });
@@ -102,7 +115,15 @@ module.exports.userSessions = async (req, res) => {
        WHERE sb.user_id = $1`,
       [userId]
     );
-    res.status(200).json({ bookingDetails: result.rows });
+    const sessionDetails = result.rows.map(r => ({
+      startTime: r.start_time,
+      endTime: r.end_time
+    }));
+    const bookingDetails = result.rows.map(r => ({
+      ...r,
+      createdAt: r.created_at
+    }));
+    res.status(200).json({ sessionDetails, bookingDetails });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred while fetching user sessions." });
