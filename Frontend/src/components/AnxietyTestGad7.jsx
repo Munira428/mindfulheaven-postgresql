@@ -95,7 +95,7 @@ const Form = () => {
 
     let severity = 'Unknown'
     try {
-        const mlResponse = await fetch('http://localhost:5002/predict-anxiety', {
+        const mlResponse = await fetch(import.meta.env.VITE_REACT_APP_BASE_URL_ML + 'predict-anxiety', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
