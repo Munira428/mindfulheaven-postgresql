@@ -5,9 +5,25 @@ require("dotenv").config();
 
 const maxAge = 3 * 60 * 60 * 24;
 const SECRET_KEY = process.env.SECRET_KEY;
+const isProd = process.env.NODE_ENV === "production";
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "None" : "Lax",
+};
 
 const CreateToken = (id, email) => {
   return JWT.sign({ id, email }, SECRET_KEY, { expiresIn: maxAge });
+};
+
+module.exports.requireAuth = (req, res, next) => {
+  try {
+    const decoded = JWT.verify(req.cookies.jwt, process.env.SECRET_KEY);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Not authenticated" });
+  }
 };
 
 module.exports.signup_post = async (req, res) => {
@@ -34,7 +50,7 @@ module.exports.login_post = async (req, res) => {
   try {
     const user = await User.login(email, password);
     const token = CreateToken(user.id, user.email);
-    res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000, sameSite: "Lax" });
+    res.cookie("jwt", token, { ...cookieOptions, maxAge: maxAge * 1000 });
     res.status(201).json({ user: user.id });
   } catch (err) {
     console.log(err.message);
@@ -43,7 +59,7 @@ module.exports.login_post = async (req, res) => {
 };
 
 module.exports.logout_post = async (req, res) => {
-  res.clearCookie("jwt");
+  res.clearCookie("jwt", cookieOptions);
   res.status(200).json({ message: "Logged out successfully" });
 };
 
@@ -80,7 +96,8 @@ module.exports.get_details = async (req, res) => {
 
 module.exports.update_depression_score = async (req, res) => {
   try {
-    const { userId, score } = req.body;
+    const userId = req.userId;
+    const { score } = req.body;
     await User.addScore(userId, "depression", score);
     res.status(200).json({ message: "Depression score updated successfully" });
   } catch (error) {
@@ -90,7 +107,8 @@ module.exports.update_depression_score = async (req, res) => {
 
 module.exports.update_anxiety_score = async (req, res) => {
   try {
-    const { userId, score } = req.body;
+    const userId = req.userId;
+    const { score } = req.body;
     await User.addScore(userId, "anxiety", score);
     res.status(200).json({ message: "Anxiety score updated successfully" });
   } catch (error) {
@@ -100,7 +118,8 @@ module.exports.update_anxiety_score = async (req, res) => {
 
 module.exports.update_stress_score = async (req, res) => {
   try {
-    const { userId, score } = req.body;
+    const userId = req.userId;
+    const { score } = req.body;
     await User.addScore(userId, "stress", score);
     res.status(200).json({ message: "Stress score updated successfully" });
   } catch (error) {
